@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.is;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
 
-public class ReqresInTests {
+public class ReqresInTests extends TestBase {
 
     @Test
     void successfulUserRegistrationTest() {
@@ -23,7 +23,7 @@ public class ReqresInTests {
                 .contentType(JSON)
                 .body(requestBody)
                 .when()
-                .post("https://reqres.in/api/register")
+                .post("/register")
                 .then()
                 .log().status()
                 .log().body()
@@ -43,7 +43,7 @@ public class ReqresInTests {
                 .contentType(JSON)
                 .body(requestBody)
                 .when()
-                .post("https://reqres.in/api/register")
+                .post("/register")
                 .then()
                 .log().status()
                 .log().body()
@@ -65,7 +65,7 @@ public class ReqresInTests {
                 .contentType(JSON)
                 .body(requestBody)
                 .when()
-                .post("https://reqres.in/api/register")
+                .post("/register")
                 .then()
                 .log().status()
                 .log().body()
@@ -82,7 +82,7 @@ public class ReqresInTests {
                 .log().uri()
                 .log().body()
                 .when()
-                .get("https://reqres.in/api/user/2")
+                .get("/user/2")
                 .then()
                 .log().status()
                 .log().body()
@@ -106,7 +106,7 @@ public class ReqresInTests {
                 .contentType(JSON)
                 .body(requestBody)
                 .when()
-                .put("https://reqres.in/api/user/2")
+                .put("/user/2")
                 .then()
                 .log().status()
                 .log().body()
