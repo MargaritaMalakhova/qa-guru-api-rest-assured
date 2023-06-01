@@ -4,7 +4,13 @@ import guru.qa.models.lombok.RegistrationBodyLombokModel;
 import guru.qa.models.lombok.RegistrationResponseLombokModel;
 import guru.qa.models.pojo.RegistrationBodyPojoModel;
 import guru.qa.models.pojo.RegistrationResponsePojoModel;
+import io.qameta.allure.restassured.AllureRestAssured;
 import org.junit.jupiter.api.Test;
+
+import static guru.qa.helpers.CustomAllureListener.withCustomTemplates;
+import static guru.qa.specs.RegistrationSpecs.registrationRequestSpec;
+import static guru.qa.specs.RegistrationSpecs.registrationResponseSpec;
+import static io.qameta.allure.Allure.step;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import static io.restassured.RestAssured.given;
@@ -86,4 +92,105 @@ public class ReqresInExtendedTests extends TestBase {
         assertEquals(userId, response.getId());
     }
 
+    @Test
+    void successfulUserRegistrationWithAllureTest() {
+
+        Integer userId = 4;
+        String userToken = "QpwL5tke4Pnpja7X4";
+        RegistrationBodyLombokModel requestBody = new RegistrationBodyLombokModel();
+        requestBody.setEmail("eve.holt@reqres.in");
+        requestBody.setPassword("pistol");
+
+        RegistrationResponseLombokModel response = given()
+                .log().uri()
+                .log().body()
+                .filter(new AllureRestAssured())
+                .contentType(JSON)
+                .body(requestBody)
+                .when()
+                .post("/register")
+                .then()
+                .log().status()
+                .log().body()
+                .statusCode(200)
+                .extract().as(RegistrationResponseLombokModel.class);
+        assertEquals(userToken, response.getToken());
+        assertEquals(userId, response.getId());
+    }
+    @Test
+    void successfulUserRegistrationWithCustomAllureTest() {
+
+        Integer userId = 4;
+        String userToken = "QpwL5tke4Pnpja7X4";
+        RegistrationBodyLombokModel requestBody = new RegistrationBodyLombokModel();
+        requestBody.setEmail("eve.holt@reqres.in");
+        requestBody.setPassword("pistol");
+
+        RegistrationResponseLombokModel response = given()
+                .log().uri()
+                .log().body()
+                .filter(withCustomTemplates())
+                .contentType(JSON)
+                .body(requestBody)
+                .when()
+                .post("/register")
+                .then()
+                .log().status()
+                .log().body()
+                .statusCode(200)
+                .extract().as(RegistrationResponseLombokModel.class);
+        assertEquals(userToken, response.getToken());
+        assertEquals(userId, response.getId());
+    }
+    @Test
+    void successfulUserRegistrationWithStepsTest() {
+
+        Integer userId = 4;
+        String userToken = "QpwL5tke4Pnpja7X4";
+        RegistrationBodyLombokModel requestBody = new RegistrationBodyLombokModel();
+        requestBody.setEmail("eve.holt@reqres.in");
+        requestBody.setPassword("pistol");
+
+        RegistrationResponseLombokModel response = step("Make request", () ->
+                 given()
+                .log().uri()
+                .log().body()
+                .filter(withCustomTemplates())
+                .contentType(JSON)
+                .body(requestBody)
+                .when()
+                .post("/register")
+                .then()
+                .log().status()
+                .log().body()
+                .statusCode(200)
+                .extract().as(RegistrationResponseLombokModel.class));
+
+        step("Check response");
+        assertEquals(userToken, response.getToken());
+        assertEquals(userId, response.getId());
+    }
+    @Test
+    void successfulUserRegistrationWithSpecsTest() {
+
+        Integer userId = 4;
+        String userToken = "QpwL5tke4Pnpja7X4";
+        RegistrationBodyLombokModel requestBody = new RegistrationBodyLombokModel();
+        requestBody.setEmail("eve.holt@reqres.in");
+        requestBody.setPassword("pistol");
+
+        RegistrationResponseLombokModel response = step("Make request", () ->
+                 given()
+                .spec(registrationRequestSpec)
+                .body(requestBody)
+                .when()
+                .post("/register")
+                .then()
+                .spec(registrationResponseSpec)
+                .extract().as(RegistrationResponseLombokModel.class));
+
+        step("Check response");
+        assertEquals(userToken, response.getToken());
+        assertEquals(userId, response.getId());
+    }
 }
