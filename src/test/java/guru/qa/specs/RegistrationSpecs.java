@@ -12,7 +12,7 @@ import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.notNullValue;
 
 public class RegistrationSpecs {
-    public static RequestSpecification registrationRequestSpec = with()
+    public static RequestSpecification RequestSpec = with()
             .log().uri()
             .log().body()
             .filter(withCustomTemplates())
@@ -24,4 +24,30 @@ public class RegistrationSpecs {
             .expectStatusCode(200)
             .expectBody("token", notNullValue())
             .build();
-    }
+
+
+    public static ResponseSpecification errorRegistrationResponseSpec = new ResponseSpecBuilder()
+            .log(STATUS)
+            .log(BODY)
+            .expectStatusCode(400)
+            .expectBody("error", notNullValue())
+            .build();
+
+    public static RequestSpecification UserIdRequestSpec = with()
+            .log().uri()
+            .log().body();
+
+    public static ResponseSpecification UserIdResponse = new ResponseSpecBuilder()
+            .log(STATUS)
+            .log(BODY)
+            .expectStatusCode(200)
+            .expectBody("data", notNullValue())
+            .build();
+
+    public static ResponseSpecification UpdateUserResponse = new ResponseSpecBuilder()
+            .log(STATUS)
+            .log(BODY)
+            .expectStatusCode(200)
+            .expectBody("name", notNullValue())
+            .build();
+}
