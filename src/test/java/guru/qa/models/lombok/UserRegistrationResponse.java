@@ -3,7 +3,7 @@ package guru.qa.models.lombok;
 import lombok.Data;
 
 @Data
-public class RegistrationResponseLombokModel {
+public class UserRegistrationResponse {
 
     String token;
     Integer id;

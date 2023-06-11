@@ -5,9 +5,8 @@ import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UpdateUserResponseLombokModel {
+public class UserUpdate {
 
     String name;
     String job;
-    String updatedAt;
 }

@@ -5,8 +5,7 @@ import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UpdateUserBodyLombokModel {
+public class UserIdCheckResponse {
 
-    String name;
-    String job;
+    User data;
 }

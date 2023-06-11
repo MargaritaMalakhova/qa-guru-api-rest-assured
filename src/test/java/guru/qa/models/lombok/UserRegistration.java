@@ -3,7 +3,7 @@ package guru.qa.models.lombok;
 import lombok.Data;
 
 @Data
-public class JsonSchemeBodyLombokModel {
+public class UserRegistration {
 
     String email, password;
 }

@@ -3,146 +3,166 @@ package guru.qa.tests;
 import guru.qa.models.lombok.*;
 import org.junit.jupiter.api.Test;
 
-import static guru.qa.specs.JsonSchemeSpecs.jsonSchemeRequestSpec;
-import static guru.qa.specs.JsonSchemeSpecs.jsonSchemeResponseSpec;
-import static guru.qa.specs.RegistrationSpecs.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+
+import static guru.qa.specs.Specs.*;
 import static io.qameta.allure.Allure.step;
-import static io.restassured.http.ContentType.JSON;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
-import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class ReqresInExtendedTests extends TestBase {
+
+    String email = "eve.holt@reqres.in";
+    String password = "pistol";
+    String userName = "morpheus";
+    String userJob = "zion resident";
+    String errorMessage = "Missing password";
+
 
     @Test
     void successfulUserRegistrationWithSpecsTest() {
 
         Integer userId = 4;
         String userToken = "QpwL5tke4Pnpja7X4";
-        RegistrationBodyLombokModel requestBody = new RegistrationBodyLombokModel();
-        requestBody.setEmail("eve.holt@reqres.in");
-        requestBody.setPassword("pistol");
+        UserRegistration requestBody = new UserRegistration();
+        requestBody.setEmail(email);
+        requestBody.setPassword(password);
 
-        RegistrationResponseLombokModel response = step("Make request", () ->
-                 given()
-                .spec(RequestSpec)
-                .body(requestBody)
-                .when()
-                .post("/register")
-                .then()
-                .spec(registrationResponseSpec)
-                .extract().as(RegistrationResponseLombokModel.class));
+        UserRegistrationResponse response = step("Make request", () ->
+                given()
+                        .spec(requestSpec)
+                        .body(requestBody)
+                        .when()
+                        .post("/register")
+                        .then()
+                        .spec(userRegistrationResponseSpec)
+                        .extract().as(UserRegistrationResponse.class));
 
-        step("Check response");
-        assertEquals(userToken, response.getToken());
-        assertEquals(userId, response.getId());
+        step("Check response", () ->
+        {
+            assertEquals(userToken, response.getToken());
+            assertEquals(userId, response.getId());
+        });
     }
 
     @Test
     void successfulCheckJsonSchemeTest() {
 
-        JsonSchemeBodyLombokModel requestBody = new JsonSchemeBodyLombokModel();
-        requestBody.setEmail("eve.holt@reqres.in");
-        requestBody.setPassword("pistol");
+        UserRegistration requestBody = new UserRegistration();
+        requestBody.setEmail(email);
+        requestBody.setPassword(password);
         String pathToScheme = "schemes/user-registration-response-scheme.json";
 
         step("Make request", () ->
-        given()
-                .spec(jsonSchemeRequestSpec)
-                .body(requestBody)
-                .when()
-                .post("/register")
-                .then()
-                .spec(jsonSchemeResponseSpec)
-                .extract());
+                given()
+                        .spec(requestSpec)
+                        .body(requestBody)
+                        .when()
+                        .post("/register")
+                        .then()
+                        .spec(response200Spec)
+                        .extract());
 
-        step("Check JSON scheme");
-        assertThat(matchesJsonSchemaInClasspath(pathToScheme));
+        step("Check JSON scheme", () ->
+                assertThat(matchesJsonSchemaInClasspath(pathToScheme)));
     }
 
     @Test
     void unsuccessfulUserRegistrationWithSpecsTest() {
 
-        String errorMessage = "Missing password";
-        RegistrationBodyLombokModel requestBody = new RegistrationBodyLombokModel();
-        requestBody.setEmail("eve.holt@reqres.in");
+        UserRegistration requestBody = new UserRegistration();
+        requestBody.setEmail(email);
 
-        ErrorRegistrationResponseLombokModel response = step("Make request", () ->
+        ErrorResponse response = step("Make request", () ->
                 given()
-                        .spec(RequestSpec)
+                        .spec(requestSpec)
                         .body(requestBody)
                         .when()
                         .post("/register")
                         .then()
-                        .spec(errorRegistrationResponseSpec)
-                        .extract().as(ErrorRegistrationResponseLombokModel.class));
+                        .spec(errorResponseSpec)
+                        .extract().as(ErrorResponse.class));
 
-        step("Check response");
-        assertEquals(errorMessage, response.getError());
+        step("Check response", () ->
+                assertEquals(errorMessage, response.getError()));
     }
+
     @Test
     void successfulGetUserIdTest() {
 
         Integer userId = 2;
 
-        UserIdResponseLombokModel response = step("Make request", () ->
+        UserIdCheckResponse response = step("Make request", () ->
                 given()
-                .spec(UserIdRequestSpec)
-                .when()
-                .get("/user/2")
-                .then()
-                .spec(UserIdResponse)
-                .extract().as(UserIdResponseLombokModel.class));
+                        .spec(requestSpec)
+                        .when()
+                        .get("/user/2")
+                        .then()
+                        .spec(userIdCheckResponseSpec)
+                        .extract().as(UserIdCheckResponse.class));
 
-        step("Check response");
-        assertEquals(userId, response.getData().getId());
+        step("Check response", () ->
+                assertEquals(userId, response.getData().getId()));
     }
+
     @Test
     void successfulGetListOfUsersIdTest() {
 
         Integer[] userId = {7, 8, 9, 10, 11, 12};
 
-        UsersIdResponseLombokModel response = step("Make request", () ->
+        UsersIdCheckResponse response = step("Make request", () ->
                 given()
-                .spec(UserIdRequestSpec)
-                .when()
-                .get("/users?page=2")
-                .then()
-                .spec(UserIdResponse)
-                .extract().as(UsersIdResponseLombokModel.class));
+                        .spec(requestSpec)
+                        .when()
+                        .get("/users?page=2")
+                        .then()
+                        .spec(userIdCheckResponseSpec)
+                        .extract().as(UsersIdCheckResponse.class));
 
-        step("Check response");
-        assertThat(response.getData().contains(userId));
+        HashSet<Integer> idsFromResponse = new HashSet<>();
+        LinkedList<User> usersFromResponse = response.getData();
+        //for each user in list loop
+        for (User user : usersFromResponse) {
+            idsFromResponse.add(user.getId()); //get id
+        }
+
+        //2. check each element of array contains in hashset
+
+        step("Check response", () -> {
+            for (int id : userId) {
+                assertTrue(idsFromResponse.contains(id));
+            }
+            assertEquals(idsFromResponse.size(), userId.length);
+        });
     }
 
     @Test
     void successfulUpdateUserTest() {
-        String userName = "morpheus";
-        String userJob = "zion resident";
-        UpdateUserBodyLombokModel requestBody = new UpdateUserBodyLombokModel();
-        requestBody.setName("morpheus");
-        requestBody.setJob("zion resident");
 
-            UpdateUserResponseLombokModel response = step("Make request", () ->
+        UserUpdate requestBody = new UserUpdate();
+        requestBody.setName(userName);
+        requestBody.setJob(userJob);
+
+        UserUpdateResponse response = step("Make request", () ->
                 given()
-                .spec(RequestSpec)
-                .body(requestBody)
-                .when()
-                .put("/user/2")
-                .then()
-                .spec(UpdateUserResponse)
-                .extract().as(UpdateUserResponseLombokModel.class));
+                        .spec(requestSpec)
+                        .body(requestBody)
+                        .when()
+                        .put("/user/2")
+                        .then()
+                        .spec(userUpdateResponseSpec)
+                        .extract().as(UserUpdateResponse.class));
 
-        step("Check name in response");
-        assertEquals(userName, response.getName());
+        step("Check name in response", () ->
+                assertEquals(userName, response.getName()));
 
-        step("Check job in response");
-        assertEquals(userJob, response.getJob());
+        step("Check job in response", () ->
+                assertEquals(userJob, response.getJob()));
     }
 }
